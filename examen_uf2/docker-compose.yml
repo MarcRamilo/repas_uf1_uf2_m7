@@ -1,0 +1,41 @@
+version: '3.3'
+services:
+ php:
+  image: php:8.2.10-apache
+  volumes:
+    - ./:/var/www/html
+  expose:
+    - 80
+  ports:
+    - 80:80
+  command:
+      - bash
+      - -c
+      - |
+        docker-php-ext-install pdo_mysql zip
+        a2enmod rewrite
+        chown -R www-data:www-data /var/www/html/Public/Assets
+        apt-get update
+        apt-get install -y git unzip
+        php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+        php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+        php -r "unlink('composer-setup.php');"
+        echo 'export PATH="$PATH:/usr/local/bin"' >> ~/.bashrc
+        echo "Comprovant que Composer s'ha instal.lat correctament..."
+        apache2-foreground
+ mysql:
+  image: mysql:latest
+  environment:
+   MYSQL_ROOT_PASSWORD: "123456"
+   MYSQL_DATABASE: "ins"
+   MYSQL_USER: "hector"
+   MYSQL_PASSWORD: "123456"
+   TZ: "Europe/Madrid"
+  ports:
+   - "9999:3306"   
+ phpmyadmin:
+  image: phpmyadmin/phpmyadmin
+  environment:
+   PMA_HOST: mysql
+  ports:
+   - "8090:80"
